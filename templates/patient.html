@@ -1,0 +1,264 @@
+{{ define "content" }}
+
+
+<!-- Grid row -->
+<div class="row">
+
+    <!-- Grid column -->
+    <div class="col-lg-4 mb-4 mt-4">
+
+        <!-- Form with header -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Header -->
+                <div class="form-header blue accent-1">
+                    <h3 class="mt-2"><i class="fa fa-id-card"></i> Etat civil</h3>
+                </div>
+                <!-- Material inline 1 -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="male" name="gender">
+                    <label class="form-check-label" for="male"><i class="fa fa-mars"></i> Homme</label>
+                </div>
+
+                <!-- Material inline 2 -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="female" name="gender">
+                    <label class="form-check-label" for="female"><i class="fa fa-venus"></i> Femme</label>
+                </div>
+
+                <!-- Material inline 3 -->
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="nonbin" name="gender">
+                    <label class="form-check-label" for="nonbin"><i class="fa fa-venus-mars"></i> Non Binaire</label>
+                </div>
+                <!-- LastName -->
+                <div class="md-form">
+                    <input value="John Doe" type="text" id="lastName" class="form-control">
+                    <label for="lastName">Nom</label>
+                </div>
+
+                <!-- FirstName -->
+                <div class="md-form">
+                    <input type="text" id="firstName" class="form-control">
+                    <label for="firstName">Prénom</label>
+                </div>
+
+                <!-- Social Number -->
+                <div class="md-form">
+                    <input type="text" id="socialNumber" class="form-control">
+                    <label for="socialNumber"><i class="fa fa-credit-card-alt" aria-hidden="true"></i> Num Secu</label>
+                </div>
+                <!-- Date Naissance -->
+                <div class="md-form">
+                    <input type="text" id="date-picker-example" class="form-control datepicker" value="20/10/1979">
+                    <label for="date-picker-example"><i class="fa fa-birthday-cake"></i> Date de Naissance</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid column -->
+    <div class="col-lg-4 mb-4 mt-4">
+
+        <!-- Form with header -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Header -->
+                <div class="form-header blue accent-1">
+                    <h3 class="mt-2"><i class="fa fa-envelope"></i> Contact</h3>
+                </div>
+                <div class="md-form">
+                    <input type="email" id="email" class="form-control">
+                    <label for="email"><i class="fa fa-envelope"></i> E-mail</label>
+                </div>
+
+                <!-- Phone -->
+                <div class="md-form">
+                    <input type="text" id="phone" class="form-control">
+                    <label for="phone"><i class="fa fa-phone"></i> Telephone</label>
+                </div>
+
+                <!-- Addr1 -->
+                <div class="md-form">
+                    <input type="text" id="addr1" class="form-control">
+                    <label for="addr1"><i class="fa fa-map-marker"></i> Adresse</label>
+                </div>
+                <!-- Addr2 -->
+                <div class="md-form">
+                    <input type="text" id="addr2" class="form-control">
+                    <label for="addr2"><i class="fa fa-map-marker"></i> Adresse</label>
+                </div>
+                <!-- City -->
+                <div class="md-form">
+                    <input type="text" id="city" class="form-control">
+                    <label for="city"><i class="fa fa-map-signs"></i> Ville</label>
+                </div>
+                <!-- ZipCode -->
+                <div class="md-form">
+                    <input type="text" id="zipcode" class="form-control">
+                    <label for="zipcode"> Code Postal</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Grid column -->
+    <div class="col-lg-4 mb-4 mt-4">
+
+        <!-- Form with header -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Header -->
+                <div class="form-header blue accent-1">
+                    <h3 class="mt-2"><i class="fa fa-heartbeat"></i> Santé</h3>
+                </div>
+                <!-- smoker -->
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="smoker">
+                    <label class="custom-control-label" for="smoker"><i class="fa fa-fire"></i> Fumeur</label>
+                </div>
+                <br>
+                <!-- Sport -->
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" id="sport" class="custom-control-input">
+                    <label class="custom-control-label" for="sport"><i class="fa fa-futbol-o"></i> Sport</label>
+                </div>
+                <br>
+                <!-- Medecine -->
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" id="medecine" class="custom-control-input">
+                    <label class="custom-control-label" for="medecine"><i class="fa fa-medkit"></i> Traitement Médical</label>
+                </div>
+                <br>
+                <!-- Couple -->
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" id="couple" class="custom-control-input">
+                    <label class="custom-control-label" for="couple"><i class="fa fa-heart-o"></i> Vie en couple</label>
+                </div>
+                <!-- Children -->
+                <div class="md-form">
+                    <input type="text" id="children" class="form-control">
+                    <label for="children"><i class="fa fa-child"></i> Enfant(s)</label>
+                </div>
+                <div class="md-form">
+                    <input type="number" id="size" class="form-control">
+                    <label for="size"><i class="fa fa-arrows-v"></i> Taille (cm)</label>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Material form login -->
+<div class="card">
+
+    <h5 class="card-header primary-color white-text text-center py-4">
+        <!-- change color of the card: class += info-color -->
+        <strong>Fiche Patient</strong>
+    </h5>
+
+    <!--Card content-->
+    <div class="card-body px-lg-5 pt-0">
+
+        <!-- Form -->
+        <form class="text-center" style="color: #757575;">
+
+            <!-- Material inline 1 -->
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="male" name="gender">
+                <label class="form-check-label" for="male"><i class="fa fa-mars"></i> Homme</label>
+            </div>
+
+            <!-- Material inline 2 -->
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="female" name="gender">
+                <label class="form-check-label" for="female"><i class="fa fa-venus"></i> Femme</label>
+            </div>
+
+            <!-- Material inline 3 -->
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="nonbin" name="gender">
+                <label class="form-check-label" for="nonbin"><i class="fa fa-venus-mars"></i> Non Binaire</label>
+            </div>
+
+            <div class="form-row align-items-center">
+                <div class="col">
+                    <!-- Social Number -->
+                    <div class="md-form">
+                        <input type="text" id="socialNumber" class="form-control">
+                        <label for="socialNumber"><i class="fa fa-credit-card-alt" aria-hidden="true"></i> Num Secu</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <!-- Date Naissance -->
+                    <div class="md-form">
+                        <input type="text" id="date-picker-example" class="form-control datepicker" value="20/10/1979">
+                        <label for="date-picker-example"><i class="fa fa-birthday-cake"></i> Date de Naissance</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="form-row align-items-center">
+                <div class="col">
+                    <!-- LastName -->
+                    <div class="md-form">
+                        <input value="John Doe" type="text" id="lastName" class="form-control">
+                        <label for="lastName">Nom</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <!-- FirstName -->
+                    <div class="md-form">
+                        <input type="text" id="firstName" class="form-control">
+                        <label for="firstName">Prénom</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row align-items-center">
+                <div class="col">
+
+                    <!-- Email -->
+                    <div class="md-form">
+                        <input type="email" id="email" class="form-control">
+                        <label for="email"><i class="fa fa-envelope"></i> E-mail</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <!-- Phone -->
+                    <div class="md-form">
+                        <input type="text" id="phone" class="form-control">
+                        <label for="phone"><i class="fa fa-phone"></i> E-mail</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="d-flex justify-content-around">
+                <div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="materialLoginFormRemember">
+                        <label class="form-check-label" for="materialLoginFormRemember">Remember me</label>
+                    </div>
+                </div>
+                <div>
+                    <a href="">Forgot password?</a>
+                </div>
+            </div> -->
+
+            <!-- Sign in button -->
+            <button class="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0" type="submit">Enregistrer</button>
+        </form>
+        <!-- Form -->
+
+    </div>
+
+</div>
+<!-- Material form login -->
+{{ end }}
+
+{{ define "headtitle" }}
+<!--Show ability to set title with the same data-->
+<title>{{printf "%s" .Title}}!</title>
+{{ end }}

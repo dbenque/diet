@@ -1,0 +1,79 @@
+{{ define "outerTheme" }}
+<!DOCTYPE html>
+<html lang="fr">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Material Design Bootstrap</title>
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- Bootstrap core CSS -->
+        <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Material Design Bootstrap -->
+        <link href="./assets/css/mdb.min.css" rel="stylesheet">
+        <!-- Your custom styles (optional) -->
+        <link href="./assets/css/style.css" rel="stylesheet">
+        {{ template "headtitle" . }}
+    </head>
+
+    <body class="fixed-sn light-blue-skin" aria-busy="true">
+        <!--Double navigation-->
+        <header>
+            {{ template "sidenav" . }}
+            {{ template "navbar" . }}
+        </header>
+        <main>
+            {{ template "content" . }}
+        </main>
+    </body>
+    <!-- JQuery -->
+    <script type="text/javascript" src="./assets/js/jquery-3.3.1.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="./assets/js/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="./assets/js/mdb.min.js"></script>
+
+    <script>
+
+        // SideNav Initialization
+        $(".button-collapse").sideNav();
+        new WOW().init();
+
+        // Select Material
+        $(document).ready(function () {
+            $('.mdb-select').materialSelect();
+        });
+
+        // // Data Picker Initialization
+        // $('.datepicker').pickadate();
+        // Or, pass the months and weekdays as an array for each invocation.
+        $('.datepicker').pickadate({
+            monthsFull: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre',
+                'Novembre', 'Décembre'],
+            weekdaysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+            today: 'aujourd\'hui',
+            clear: 'effacer',
+            formatSubmit: 'dd/mm/yyyy',
+            format: 'dd/mm/yyyy'
+        })
+        // $.extend($.fn.pickadate.defaults, {
+        //     monthsFull: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre',
+        //         'Novembre', 'Décembre'],
+        //     weekdaysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+        //     today: 'aujourd\'hui',
+        //     clear: 'effacer',
+        //     formatSubmit: 'yyyy/mm/dd'
+        // })
+
+    </script>
+    <div class="drag-target" style="left: 0px; touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></div>
+
+</html>
+{{ end }}
+
+{{ define "headtitle" }}
+{{ end }}
