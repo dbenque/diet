@@ -3,26 +3,22 @@ package db
 import (
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/dbenque/diet/api"
 	"github.com/dbenque/diet/utils"
-	"github.com/go-sqlite/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/satori/go.uuid"
 )
 
-type DB interface {
-	GetPersons() []api.Person
-	Close() error
-}
-
-var _ DB = &DBSqliteImport{}
-
 type DBSqliteImport struct {
-	dbFile  *sql.DB
-	persons *sqlite3.Table
+	dbFile         *sql.DB
+	personsBySecu  map[string]*api.Person
+	citiesPerCode  map[int64]*api.City
+	doctorsPerCode map[int64]*api.Doctor
 }
 
 func Open(filepath string) (*DBSqliteImport, error) {
@@ -31,15 +27,122 @@ func Open(filepath string) (*DBSqliteImport, error) {
 		return nil, err
 	}
 
-	return &DBSqliteImport{dbFile: db}, nil
+	return &DBSqliteImport{
+		dbFile:         db,
+		personsBySecu:  map[string]*api.Person{},
+		citiesPerCode:  map[int64]*api.City{},
+		doctorsPerCode: map[int64]*api.Doctor{},
+	}, nil
+}
+func (db *DBSqliteImport) Import() error {
+	db.GetCities()
+	fmt.Printf("%d Cities imported\n", len(db.citiesPerCode))
+	db.GetDoctors()
+	fmt.Printf("%d Doctors imported\n", len(db.doctorsPerCode))
+	db.GetPersons()
+	fmt.Printf("%d Patients imported\n", len(db.personsBySecu))
+	return nil
 }
 
 func (db *DBSqliteImport) Close() error {
 	return db.dbFile.Close()
 }
+func (db *DBSqliteImport) GetDoctors() []*api.Doctor {
+	result := []*api.Doctor{}
+	rows, err := db.dbFile.Query(`select
+	"Numéro Médecin",
+	"Nom Médecin",
+	"Prénom Médecin",
+	"Titre",
+	"Adresse 1",
+	"Adresse 2",
+	"Code Ville",
+	"Téléphone",
+	"Email",
+	"Profession"
+	from "tbl Médecin"`)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-func (db *DBSqliteImport) GetPersons() []api.Person {
-	result := []api.Person{}
+	defer rows.Close()
+	for rows.Next() {
+		var p api.Doctor
+		var pCode sql.NullInt64
+		var pCodeVille sql.NullInt64
+		var pName, pFirstName, pTitle, pAddr1, pAddr2, pPhone, pEmail, pType sql.NullString
+		err = rows.Scan(
+			&pCode, &pName, &pFirstName, &pTitle, &pAddr1, &pAddr2, &pCodeVille, &pPhone, &pEmail, &pType,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		p.ID = uuid.Must(uuid.NewV4()).String()
+		p.Name = pName.String
+		p.FirstName = pFirstName.String
+		p.Title = pTitle.String
+		p.Address1 = pAddr1.String
+		p.Address2 = pAddr2.String
+		if city, ok := db.citiesPerCode[pCodeVille.Int64]; ok {
+			p.City = city.Name
+			p.PostCode = city.PostCode
+		}
+		p.Phone = pPhone.String
+		p.Email = pEmail.String
+		p.Type = pType.String
+
+		result = append(result, &p)
+		db.doctorsPerCode[pCode.Int64] = &p
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result
+}
+
+func (db *DBSqliteImport) GetCities() []*api.City {
+	result := []*api.City{}
+	rows, err := db.dbFile.Query(`select
+	"Code Ville",
+	"Nom Ville",
+	"Code postal",
+	"Département",
+	"Pays"
+	from "tbl Villes"`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var p api.City
+		var pCode sql.NullInt64
+		var pCity, pPostal, pDep, pCountry sql.NullString
+		err = rows.Scan(
+			&pCode, &pCity, &pPostal, &pDep, &pCountry,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		p.ID = uuid.Must(uuid.NewV4()).String()
+		p.Country = pCountry.String
+		p.Name = pCity.String
+		p.PostCode = pPostal.String
+		p.Department = pDep.String
+
+		result = append(result, &p)
+		db.citiesPerCode[pCode.Int64] = &p
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result
+}
+
+func (db *DBSqliteImport) GetPersons() []*api.Person {
+	result := []*api.Person{}
 
 	rows, err := db.dbFile.Query(`select
  "N° Sécu",
@@ -68,7 +171,10 @@ func (db *DBSqliteImport) GetPersons() []api.Person {
  "Poids Naissance",
  "N° Médecin",
  "Antécédents",
- "Particularités"
+ "Particularités",
+ "Remarques",
+ "Profession",
+ "Régimes Traitements passés"
  from "tbl Adhérent"`)
 	if err != nil {
 		log.Fatal(err)
@@ -81,7 +187,8 @@ func (db *DBSqliteImport) GetPersons() []api.Person {
 		var allergies sql.NullString
 		var s1, sf1, s2, sf2, s3, sf3, s4, sf4 sql.NullString //sport
 		var m1, mf1, m2, mf2, m3, mf3 sql.NullString          //medoc
-		var pSocialNumber, pGender, pPhone, pEmail, pDoctor, pName, pFirstName, pAntecedents, pSpecific sql.NullString
+		var pDoctor sql.NullInt64
+		var pSocialNumber, pGender, pPhone, pEmail, pName, pFirstName, pAntecedents, pSpecific, pRemark, pPastTreatment, pWork sql.NullString
 		var pBirthWeight sql.NullFloat64
 		var pBirthDate NullDate
 		err = rows.Scan(
@@ -100,6 +207,9 @@ func (db *DBSqliteImport) GetPersons() []api.Person {
 			&pDoctor,
 			&pAntecedents,
 			&pSpecific,
+			&pRemark,
+			&pPastTreatment,
+			&pWork,
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -110,10 +220,19 @@ func (db *DBSqliteImport) GetPersons() []api.Person {
 		p.Phone = pPhone.String
 		p.SocialNumber = pSocialNumber.String
 		p.Email = pEmail.String
-		p.Doctor = pDoctor.String
+		if doctor, ok := db.doctorsPerCode[pDoctor.Int64]; ok {
+			p.Doctor = doctor.ID
+		}
 		p.BirthWeight = pBirthWeight.Float64
 		p.BirthDate = pBirthDate.Date
 		p.Antecedents = pAntecedents.String
+		p.Remark = pRemark.String
+		p.Work = pWork.String
+		p.PastTreatment = pPastTreatment.String
+		if p.PastTreatment == "Néant" {
+			p.PastTreatment = ""
+		}
+
 		if p.Antecedents == "Néant" {
 			p.Antecedents = ""
 		}
@@ -149,13 +268,13 @@ func (db *DBSqliteImport) GetPersons() []api.Person {
 		if m3.String != "" {
 			p.Medecines = append(p.Medecines, strings.TrimSpace(m3.String+" "+mf3.String))
 		}
-		result = append(result, p)
+		result = append(result, &p)
+		db.personsBySecu[p.SocialNumber] = &p
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	return result
 }
 
@@ -187,3 +306,7 @@ func (n NullDate) Value() (driver.Value, error) {
 	}
 	return n.Date, nil
 }
+
+//Diagnostic
+//Symptomes / Douleurs / Selles
+//Prescription

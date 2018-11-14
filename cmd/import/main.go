@@ -14,6 +14,6 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("---")
-	Persons := database.GetPersons()
-	fmt.Printf("%#v", Persons[1000])
+	database.Import()
+
 }

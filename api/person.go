@@ -21,6 +21,7 @@ type Person struct {
 
 	Sports         []string `json:"sports"`
 	WorkConditions string   `json:"workConditions"`
+	Work           string   `json:"work"`
 
 	Doctor        string   `json:"doctor"`
 	Antecedents   string   `json:"Antecedents"`
@@ -28,6 +29,30 @@ type Person struct {
 	Medecines     []string `json:"medecines"`
 	PastTreatment string   `json:"pastReatments"`
 	Specific      string   `json:"specific"`
+
+	Remark string `json:"remark"`
+}
+
+type Doctor struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	FirstName string `json:"firstName"`
+	Title     string `json:"title"`
+	Address1  string `json:"address1"`
+	Address2  string `json:"address2"`
+	City      string `json:"city"`
+	PostCode  string `json:"postCode"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	Type      string `json:"type"`
+}
+
+type City struct {
+	ID         string `json:"id"`
+	Name       string `json:"city"`
+	PostCode   string `json:"postCode"`
+	Department string `json:"department"`
+	Country    string `json:"country"`
 }
 
 //Gender enum
