@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ type DBSqliteImport struct {
 	personsBySecu  map[string]*api.Person
 	citiesPerCode  map[int64]*api.City
 	doctorsPerCode map[int64]*api.Doctor
+	consultPerID   map[string]*api.Consult
 }
 
 func Open(filepath string) (*DBSqliteImport, error) {
@@ -32,6 +34,7 @@ func Open(filepath string) (*DBSqliteImport, error) {
 		personsBySecu:  map[string]*api.Person{},
 		citiesPerCode:  map[int64]*api.City{},
 		doctorsPerCode: map[int64]*api.Doctor{},
+		consultPerID:   map[string]*api.Consult{},
 	}, nil
 }
 func (db *DBSqliteImport) Import() error {
@@ -41,6 +44,8 @@ func (db *DBSqliteImport) Import() error {
 	fmt.Printf("%d Doctors imported\n", len(db.doctorsPerCode))
 	db.GetPersons()
 	fmt.Printf("%d Patients imported\n", len(db.personsBySecu))
+	db.GetConsults()
+	fmt.Printf("%d Consult imported\n", len(db.consultPerID))
 	return nil
 }
 
@@ -133,6 +138,127 @@ func (db *DBSqliteImport) GetCities() []*api.City {
 
 		result = append(result, &p)
 		db.citiesPerCode[pCode.Int64] = &p
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result
+}
+
+func (db *DBSqliteImport) GetConsults() []*api.Consult {
+	result := []*api.Consult{}
+
+	rows, err := db.dbFile.Query(`select
+	"N° Sécu",
+	"ConsultID",
+	"Date de la consultation",
+	"Nombril (cm)",
+	"Taille (cm)",
+	"Poids (kg)",
+	"PoidsSouh",
+	"Contour taille (cm)",
+	"Contour hanches (cm)",
+	"Aisselles",
+	"Poitrine",
+	"Genou droit",
+	"Genou gauche",
+	"Cuisse droite",
+	"Cuisse gauche",
+	"Mollet droit",
+	"Mollet gauche",
+	"Cheville droite",
+	"Cheville gauche",
+	"Masse maigre",
+	"Masse grasse",
+	"Choléstérol",
+	"Créatine",
+	"Remarques Info",
+	"Glycémie",
+	"DCI"
+	from "tbl Données Médicales Adhérents"`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var p api.Consult
+		var pConsultID sql.NullInt64
+		var pDate NullDate
+		var pSocialNumber, pRemarks sql.NullString
+		var pBelly, pHeight, pWeight, pWeightTarget, pLeanMass, pFatMass sql.NullFloat64
+		var pWaist, pHip, pArmpits, pBreast, pKneeR, pKneeL, pThighR, pThighL, pCalfR, pCalfL, pAnkleR, pAnkleL sql.NullInt64
+		var pCholesterol, pGlucose, pCreatine, pDCI sql.NullFloat64
+		err = rows.Scan(
+			&pSocialNumber,
+			&pConsultID,
+			&pDate,
+			&pBelly,
+			&pHeight,
+			&pWeight,
+			&pWeightTarget,
+			&pWaist,
+			&pHip,
+			&pArmpits,
+			&pBreast,
+			&pKneeR,
+			&pKneeL,
+			&pThighR,
+			&pThighL,
+			&pCalfR,
+			&pCalfL,
+			&pAnkleR,
+			&pAnkleL,
+			&pLeanMass,
+			&pFatMass,
+			&pCholesterol,
+			&pCreatine,
+			&pRemarks,
+			&pGlucose,
+			&pDCI,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		p.Date = pDate.Date
+		p.ID = strconv.Itoa(int(pConsultID.Int64))
+		p.DCI = pDCI.Float64
+		p.Remarks = pRemarks.String
+
+		p.Measures.AnkleLeft = float64(pAnkleL.Int64)
+		p.Measures.AnkleRight = float64(pAnkleR.Int64)
+		p.Measures.Armpits = float64(pArmpits.Int64)
+		p.Measures.BellyButton = pBelly.Float64
+		p.Measures.Breast = float64(pBreast.Int64)
+		p.Measures.CalfLeft = float64(pCalfL.Int64)
+		p.Measures.CalfRight = float64(pAnkleR.Int64)
+		p.Measures.FatMass = pFatMass.Float64
+		p.Measures.Height = pHeight.Float64
+		p.Measures.Hip = float64(pHip.Int64)
+		p.Measures.KneeLeft = float64(pKneeL.Int64)
+		p.Measures.KneeRight = float64(pKneeR.Int64)
+		p.Measures.LeanMass = pLeanMass.Float64
+		p.Measures.ThighLeft = float64(pThighL.Int64)
+		p.Measures.ThighRight = float64(pThighR.Int64)
+		p.Measures.Waist = float64(pWaist.Int64)
+		p.Measures.Weight = pWeight.Float64
+		p.Measures.WeightTarget = pWeightTarget.Float64
+
+		p.BloodAnalysis.Cholesterol = pCholesterol.Float64
+		p.BloodAnalysis.Creatine = pCreatine.Float64
+		p.BloodAnalysis.Glucose = pGlucose.Float64
+
+		if person, ok := db.personsBySecu[pSocialNumber.String]; !ok {
+			log.Fatalf("Unknow Social Number for consult %s", pSocialNumber.String)
+		} else {
+			p.PersonID = person.ID
+		}
+		//p.PersonID = TODO il faut le retrouver
+		result = append(result, &p)
+		db.consultPerID[p.ID] = &p
 	}
 	err = rows.Err()
 	if err != nil {

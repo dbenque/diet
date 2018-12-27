@@ -4,6 +4,41 @@ import (
 	"time"
 )
 
+type ConsultMeasure struct {
+	BellyButton  float64 `json:"belly"`
+	Height       float64 `json:"height"`
+	Weight       float64 `json:"weight"`
+	WeightTarget float64 `json:"weightTarget"`
+	Waist        float64 `json:"waist"`   // taille
+	Hip          float64 `json:"hip"`     // hanche
+	Armpits      float64 `json:"armpits"` //aisselle
+	Breast       float64 `json:"breast"`  //poitrine
+	KneeRight    float64 `json:"kneeRight"`
+	KneeLeft     float64 `json:"kneeLeft"`
+	ThighRight   float64 `json:"thighRight` //Cuisse
+	ThighLeft    float64 `json:"thighLeft`
+	CalfRight    float64 `json:"calfRight` //Mollet
+	CalfLeft     float64 `json:"calfLeft`
+	AnkleRight   float64 `json:"ankleRight` // Cheville
+	AnkleLeft    float64 `json:"anfleLeft`
+	LeanMass     float64 `json:"leanMass"`
+	FatMass      float64 `json:"fatMass"`
+}
+type BloodAnalysis struct {
+	Cholesterol float64 `json:"cholesterol"`
+	Glucose     float64 `json:"glucose"`
+	Creatine    float64 `json:"creatine"`
+}
+type Consult struct {
+	ID            string         `json:"id"`
+	Date          time.Time      `json:"date"`
+	PersonID      string         `json:"person"`
+	Measures      ConsultMeasure `json:"measures"`
+	BloodAnalysis BloodAnalysis  `json:"bloodAnalysis"`
+	DCI           float64        `json:"DCI"`
+	Remarks       string         `json:"remarks"`
+}
+
 type Person struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
