@@ -8,12 +8,11 @@ import (
 )
 
 func main() {
-	database, err := db.Open("/home/dbenque/code/diet/db/diet.db3")
+	database, err := db.Open("/home/david/code/diet/db/diet.db3")
 	if err != nil {
 		fmt.Println(err.Error)
 		os.Exit(1)
 	}
 	fmt.Println("---")
 	database.Import()
-
 }

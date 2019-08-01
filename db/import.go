@@ -12,15 +12,16 @@ import (
 	"github.com/dbenque/diet/api"
 	"github.com/dbenque/diet/utils"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 type DBSqliteImport struct {
-	dbFile         *sql.DB
-	personsBySecu  map[string]*api.Person
-	citiesPerCode  map[int64]*api.City
-	doctorsPerCode map[int64]*api.Doctor
-	consultPerID   map[string]*api.Consult
+	dbFile           *sql.DB
+	personsBySecu    map[string]*api.Person
+	citiesPerCode    map[int64]*api.City
+	doctorsPerCode   map[int64]*api.Doctor
+	consultPerID     map[string]*api.Consult
+	consultForPerson map[string][]*api.Consult
 }
 
 func Open(filepath string) (*DBSqliteImport, error) {
@@ -30,11 +31,12 @@ func Open(filepath string) (*DBSqliteImport, error) {
 	}
 
 	return &DBSqliteImport{
-		dbFile:         db,
-		personsBySecu:  map[string]*api.Person{},
-		citiesPerCode:  map[int64]*api.City{},
-		doctorsPerCode: map[int64]*api.Doctor{},
-		consultPerID:   map[string]*api.Consult{},
+		dbFile:           db,
+		personsBySecu:    map[string]*api.Person{},
+		citiesPerCode:    map[int64]*api.City{},
+		doctorsPerCode:   map[int64]*api.Doctor{},
+		consultPerID:     map[string]*api.Consult{},
+		consultForPerson: map[string][]*api.Consult{},
 	}, nil
 }
 func (db *DBSqliteImport) Import() error {
@@ -82,7 +84,7 @@ func (db *DBSqliteImport) GetDoctors() []*api.Doctor {
 		if err != nil {
 			log.Fatal(err)
 		}
-		p.ID = uuid.Must(uuid.NewV4()).String()
+		p.ID = uuid.Must(uuid.NewV4(), nil).String()
 		p.Name = pName.String
 		p.FirstName = pFirstName.String
 		p.Title = pTitle.String
@@ -130,7 +132,7 @@ func (db *DBSqliteImport) GetCities() []*api.City {
 		if err != nil {
 			log.Fatal(err)
 		}
-		p.ID = uuid.Must(uuid.NewV4()).String()
+		p.ID = uuid.Must(uuid.NewV4(), nil).String()
 		p.Country = pCountry.String
 		p.Name = pCity.String
 		p.PostCode = pPostal.String
@@ -258,6 +260,16 @@ func (db *DBSqliteImport) GetConsults() []*api.Consult {
 		}
 		//p.PersonID = TODO il faut le retrouver
 		result = append(result, &p)
+		consults := []*api.Consult{}
+		if mc, okc := db.consultForPerson[p.PersonID]; okc {
+			consults = mc
+			if len(mc) > 25 {
+				p := db.personsBySecu[p.PersonID]
+				fmt.Println(p.FirstName + " " + p.Name)
+			}
+		}
+		db.consultForPerson[p.PersonID] = append(consults, &p)
+
 		db.consultPerID[p.ID] = &p
 	}
 	err = rows.Err()
@@ -345,6 +357,7 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 		p.FirstName = pFirstName.String
 		p.Phone = pPhone.String
 		p.SocialNumber = pSocialNumber.String
+		p.ID = p.SocialNumber
 		p.Email = pEmail.String
 		if doctor, ok := db.doctorsPerCode[pDoctor.Int64]; ok {
 			p.Doctor = doctor.ID
