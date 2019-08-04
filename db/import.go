@@ -17,11 +17,12 @@ import (
 
 type DBSqliteImport struct {
 	dbFile           *sql.DB
-	personsBySecu    map[string]*api.Person
-	citiesPerCode    map[int64]*api.City
-	doctorsPerCode   map[int64]*api.Doctor
-	consultPerID     map[string]*api.Consult
-	consultForPerson map[string][]*api.Consult
+	PersonsBySecu    map[string]*api.Person
+	CitiesPerCode    map[int64]*api.City
+	DoctorsPerCode   map[int64]*api.Doctor
+	DoctorsPerID     map[string]*api.Doctor
+	ConsultPerID     map[string]*api.Consult
+	ConsultForPerson map[string][]*api.Consult
 }
 
 func Open(filepath string) (*DBSqliteImport, error) {
@@ -32,22 +33,23 @@ func Open(filepath string) (*DBSqliteImport, error) {
 
 	return &DBSqliteImport{
 		dbFile:           db,
-		personsBySecu:    map[string]*api.Person{},
-		citiesPerCode:    map[int64]*api.City{},
-		doctorsPerCode:   map[int64]*api.Doctor{},
-		consultPerID:     map[string]*api.Consult{},
-		consultForPerson: map[string][]*api.Consult{},
+		PersonsBySecu:    map[string]*api.Person{},
+		CitiesPerCode:    map[int64]*api.City{},
+		DoctorsPerCode:   map[int64]*api.Doctor{},
+		DoctorsPerID:     map[string]*api.Doctor{},
+		ConsultPerID:     map[string]*api.Consult{},
+		ConsultForPerson: map[string][]*api.Consult{},
 	}, nil
 }
 func (db *DBSqliteImport) Import() error {
 	db.GetCities()
-	fmt.Printf("%d Cities imported\n", len(db.citiesPerCode))
+	fmt.Printf("%d Cities imported\n", len(db.CitiesPerCode))
 	db.GetDoctors()
-	fmt.Printf("%d Doctors imported\n", len(db.doctorsPerCode))
+	fmt.Printf("%d Doctors imported\n", len(db.DoctorsPerCode))
 	db.GetPersons()
-	fmt.Printf("%d Patients imported\n", len(db.personsBySecu))
+	fmt.Printf("%d Patients imported\n", len(db.PersonsBySecu))
 	db.GetConsults()
-	fmt.Printf("%d Consult imported\n", len(db.consultPerID))
+	fmt.Printf("%d Consult imported\n", len(db.ConsultPerID))
 	return nil
 }
 
@@ -90,7 +92,7 @@ func (db *DBSqliteImport) GetDoctors() []*api.Doctor {
 		p.Title = pTitle.String
 		p.Address1 = pAddr1.String
 		p.Address2 = pAddr2.String
-		if city, ok := db.citiesPerCode[pCodeVille.Int64]; ok {
+		if city, ok := db.CitiesPerCode[pCodeVille.Int64]; ok {
 			p.City = city.Name
 			p.PostCode = city.PostCode
 		}
@@ -99,7 +101,8 @@ func (db *DBSqliteImport) GetDoctors() []*api.Doctor {
 		p.Type = pType.String
 
 		result = append(result, &p)
-		db.doctorsPerCode[pCode.Int64] = &p
+		db.DoctorsPerCode[pCode.Int64] = &p
+		db.DoctorsPerID[p.ID] = &p
 	}
 	err = rows.Err()
 	if err != nil {
@@ -139,7 +142,7 @@ func (db *DBSqliteImport) GetCities() []*api.City {
 		p.Department = pDep.String
 
 		result = append(result, &p)
-		db.citiesPerCode[pCode.Int64] = &p
+		db.CitiesPerCode[pCode.Int64] = &p
 	}
 	err = rows.Err()
 	if err != nil {
@@ -253,7 +256,7 @@ func (db *DBSqliteImport) GetConsults() []*api.Consult {
 		p.BloodAnalysis.Creatine = pCreatine.Float64
 		p.BloodAnalysis.Glucose = pGlucose.Float64
 
-		if person, ok := db.personsBySecu[pSocialNumber.String]; !ok {
+		if person, ok := db.PersonsBySecu[pSocialNumber.String]; !ok {
 			log.Fatalf("Unknow Social Number for consult %s", pSocialNumber.String)
 		} else {
 			p.PersonID = person.ID
@@ -261,16 +264,16 @@ func (db *DBSqliteImport) GetConsults() []*api.Consult {
 		//p.PersonID = TODO il faut le retrouver
 		result = append(result, &p)
 		consults := []*api.Consult{}
-		if mc, okc := db.consultForPerson[p.PersonID]; okc {
+		if mc, okc := db.ConsultForPerson[p.PersonID]; okc {
 			consults = mc
 			if len(mc) > 25 {
-				p := db.personsBySecu[p.PersonID]
+				p := db.PersonsBySecu[p.PersonID]
 				fmt.Println(p.FirstName + " " + p.Name)
 			}
 		}
-		db.consultForPerson[p.PersonID] = append(consults, &p)
+		db.ConsultForPerson[p.PersonID] = append(consults, &p)
 
-		db.consultPerID[p.ID] = &p
+		db.ConsultPerID[p.ID] = &p
 	}
 	err = rows.Err()
 	if err != nil {
@@ -312,7 +315,10 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
  "Particularités",
  "Remarques",
  "Profession",
- "Régimes Traitements passés"
+ "Régimes Traitements passés",
+ "Tabac",
+ "Dégoûts",
+ "Préférences"
  from "tbl Adhérent"`)
 	if err != nil {
 		log.Fatal(err)
@@ -326,9 +332,10 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 		var s1, sf1, s2, sf2, s3, sf3, s4, sf4 sql.NullString //sport
 		var m1, mf1, m2, mf2, m3, mf3 sql.NullString          //medoc
 		var pDoctor sql.NullInt64
-		var pSocialNumber, pGender, pPhone, pEmail, pName, pFirstName, pAntecedents, pSpecific, pRemark, pPastTreatment, pWork sql.NullString
+		var pSocialNumber, pGender, pPhone, pEmail, pName, pFirstName, pAntecedents, pSpecific, pRemark, pPastTreatment, pWork, pDegout, pPref sql.NullString
 		var pBirthWeight sql.NullFloat64
 		var pBirthDate NullDate
+		var pTabac sql.NullBool
 		err = rows.Scan(
 			&pSocialNumber,
 			&pName,
@@ -346,8 +353,11 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 			&pAntecedents,
 			&pSpecific,
 			&pRemark,
-			&pPastTreatment,
 			&pWork,
+			&pPastTreatment,
+			&pTabac,
+			&pDegout,
+			&pPref,
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -359,7 +369,7 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 		p.SocialNumber = pSocialNumber.String
 		p.ID = p.SocialNumber
 		p.Email = pEmail.String
-		if doctor, ok := db.doctorsPerCode[pDoctor.Int64]; ok {
+		if doctor, ok := db.DoctorsPerCode[pDoctor.Int64]; ok {
 			p.Doctor = doctor.ID
 		}
 		p.BirthWeight = pBirthWeight.Float64
@@ -407,8 +417,15 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 		if m3.String != "" {
 			p.Medecines = append(p.Medecines, strings.TrimSpace(m3.String+" "+mf3.String))
 		}
+		if pTabac.Bool {
+			p.Tabac = "Oui"
+		} else {
+			p.Tabac = "Non"
+		}
+		p.Degout = pDegout.String
+		p.Preferences = pPref.String
 		result = append(result, &p)
-		db.personsBySecu[p.SocialNumber] = &p
+		db.PersonsBySecu[p.SocialNumber] = &p
 	}
 	err = rows.Err()
 	if err != nil {

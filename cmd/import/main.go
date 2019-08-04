@@ -15,4 +15,9 @@ func main() {
 	}
 	fmt.Println("---")
 	database.Import()
+	patients := []*db.Patient{}
+	for _, v := range database.PersonsBySecu {
+		patients = append(patients, db.PatientFrom(v, database))
+	}
+	db.Export(patients)
 }

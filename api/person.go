@@ -64,7 +64,9 @@ type Person struct {
 	Medecines     []string `json:"medecines"`
 	PastTreatment string   `json:"pastReatments"`
 	Specific      string   `json:"specific"`
-
+	Tabac		  string `json:"tabac"`
+	Degout string `json:"degout"`
+	Preferences string `json:"preferences"`
 	Remark string `json:"remark"`
 }
 
