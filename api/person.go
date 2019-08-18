@@ -54,6 +54,11 @@ type Person struct {
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 
+	Addr1    string `json:"addr1"`
+	Addr2    string `json:"addr2"`
+	City     string `json:"city"`
+	CityCode string `json:"cityCode"`
+
 	Sports         []string `json:"sports"`
 	WorkConditions string   `json:"workConditions"`
 	Work           string   `json:"work"`
@@ -64,10 +69,10 @@ type Person struct {
 	Medecines     []string `json:"medecines"`
 	PastTreatment string   `json:"pastReatments"`
 	Specific      string   `json:"specific"`
-	Tabac		  string `json:"tabac"`
-	Degout string `json:"degout"`
-	Preferences string `json:"preferences"`
-	Remark string `json:"remark"`
+	Tabac         string   `json:"tabac"`
+	Degout        string   `json:"degout"`
+	Preferences   string   `json:"preferences"`
+	Remark        string   `json:"remark"`
 }
 
 type Doctor struct {

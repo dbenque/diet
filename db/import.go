@@ -256,6 +256,7 @@ func (db *DBSqliteImport) GetConsults() []*api.Consult {
 		p.BloodAnalysis.Creatine = pCreatine.Float64
 		p.BloodAnalysis.Glucose = pGlucose.Float64
 
+		fmt.Printf("%#v\n", p.Measures)
 		if person, ok := db.PersonsBySecu[pSocialNumber.String]; !ok {
 			log.Fatalf("Unknow Social Number for consult %s", pSocialNumber.String)
 		} else {
@@ -294,6 +295,9 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
  "Téléphone Domicile",
  "Portable",
  "Email",
+ "Adresse 1",
+ "Adresse 2",
+ "Code Ville",
  "Allergies",
  "Sports 1",
  "Fréquence Sport 1",
@@ -327,11 +331,11 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 	defer rows.Close()
 	for rows.Next() {
 		var p api.Person
-		var tel sql.NullString
+		var tel, paddr1, paddr2 sql.NullString
 		var allergies sql.NullString
 		var s1, sf1, s2, sf2, s3, sf3, s4, sf4 sql.NullString //sport
 		var m1, mf1, m2, mf2, m3, mf3 sql.NullString          //medoc
-		var pDoctor sql.NullInt64
+		var pDoctor, pcodeVille sql.NullInt64
 		var pSocialNumber, pGender, pPhone, pEmail, pName, pFirstName, pAntecedents, pSpecific, pRemark, pPastTreatment, pWork, pDegout, pPref sql.NullString
 		var pBirthWeight sql.NullFloat64
 		var pBirthDate NullDate
@@ -345,6 +349,7 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 			&tel,
 			&pPhone,
 			&pEmail,
+			&paddr1, &paddr2, &pcodeVille,
 			&allergies,
 			&s1, &sf1, &s2, &sf2, &s3, &sf3, &s4, &sf4,
 			&m1, &mf1, &m2, &mf2, &m3, &mf3,
@@ -369,6 +374,14 @@ func (db *DBSqliteImport) GetPersons() []*api.Person {
 		p.SocialNumber = pSocialNumber.String
 		p.ID = p.SocialNumber
 		p.Email = pEmail.String
+		p.Addr1 = paddr1.String
+		p.Addr2 = paddr2.String
+
+		if city, ok := db.CitiesPerCode[pcodeVille.Int64]; ok {
+			p.City = city.Name
+			p.CityCode = city.PostCode
+		}
+
 		if doctor, ok := db.DoctorsPerCode[pDoctor.Int64]; ok {
 			p.Doctor = doctor.ID
 		}
